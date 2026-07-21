@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pronto AutoLogin Generator</title>
+  <title>VIT Wifi auto login Setup Generator</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -13,6 +13,9 @@
       align-items: center;
       min-height: 100vh;
       margin: 0;
+      /* Prevent the bottom bar from covering content on smaller views */
+      padding-bottom: 70px; 
+      box-sizing: border-box;
     }
     .card {
       background: #ffffff;
@@ -21,6 +24,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       width: 100%;
       max-width: 480px;
+      margin: 20px;
     }
     h2 {
       margin-top: 0;
@@ -94,6 +98,48 @@
     .copy-btn:hover {
       background-color: #218838;
     }
+
+    /* --- Locked Bottom Bar Styles --- */
+    .locked-bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 55px;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      box-sizing: border-box;
+      z-index: 9999;
+      box-shadow: 0 -3px 12px rgba(0,0,0,0.15);
+      font-size: 13px;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #28a745;
+      border-radius: 50%;
+    }
+    .bar-links a {
+      color: #0066cc;
+      text-decoration: none;
+      font-weight: 600;
+      background: #ffffff;
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: opacity 0.2s;
+    }
+    .bar-links a:hover {
+      opacity: 0.9;
+    }
   </style>
 
   <script>
@@ -114,71 +160,15 @@
         return;
       }
 
-      // Non-interactive Batch script logic
-      const batContent = `@echo off
-setlocal EnableDelayedExpansion
-
-set "APP_DIR=%APPDATA%\\ProntoAutoLogin"
-set "CRED_FILE=%APP_DIR%\\creds.dat"
-
-if not exist "%APP_DIR%" mkdir "%APP_DIR%"
-
-if not exist "%CRED_FILE%" (
-    (
-        echo REG:${reg}
-        echo PASS:${pass}
-    ) > "%CRED_FILE%"
-)
-
-for /f "usebackq tokens=1,2 delims=:" %%A in ("%CRED_FILE%") do (
-    if "%%A"=="REG" set "USER_ID=%%B"
-    if "%%A"=="PASS" set "USER_PASS=%%B"
-)
-
-:MONITOR_LOOP
-timeout /t 5 /nobreak >nul
-
-call :GET_SSID CURRENT_SSID
-if "!CURRENT_SSID!"=="" goto MONITOR_LOOP
-
-for /f "delims=" %%R in ('curl.exe -s -m 3 http://www.msftconnecttest.com/connecttest.txt 2^>nul') do set "TEST_RESPONSE=%%R"
-
-if not "!TEST_RESPONSE!"=="Microsoft Connect Test" (
-    timeout /t 2 /nobreak >nul
-    
-    curl.exe -s -k -X POST "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://example.com" ^
-      -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" ^
-      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" ^
-      -H "Content-Type: application/x-www-form-urlencoded" ^
-      -H "Origin: http://phc.prontonetworks.com" ^
-      -H "Referer: http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://www.msftconnecttest.com/redirect" ^
-      --data-urlencode "userId=!USER_ID!" ^
-      --data-urlencode "password=!USER_PASS!" ^
-      --data-urlencode "serviceName=ProntoAuthentication" >nul
-
-    timeout /t 3 /nobreak >nul
-)
-
-goto MONITOR_LOOP
-
-:GET_SSID
-set "%~1="
-for /f "tokens=2 delims=:" %%I in ('netsh wlan show interfaces ^| findstr /c:" SSID "') do (
-    set "RAW_SSID=%%I"
-    set "%~1=!RAW_SSID:~1!"
-)
-exit /b`;
+      const batContent = `@echo off\nsetlocal EnableDelayedExpansion\n\nset "APP_DIR=%APPDATA%\\ProntoAutoLogin"\nset "CRED_FILE=%APP_DIR%\\creds.dat"\n\nif not exist "%APP_DIR%" mkdir "%APP_DIR%"\n\nif not exist "%CRED_FILE%" (\n    (\n        echo REG:${reg}\n        echo PASS:${pass}\n    ) > "%CRED_FILE%"\n)\n\nfor /f "usebackq tokens=1,2 delims=:" %%A in ("%CRED_FILE%") do (\n    if "%%A"=="REG" set "USER_ID=%%B"\n    if "%%A"=="PASS" set "USER_PASS=%%B"\n)\n\n:MONITOR_LOOP\ntimeout /t 5 /nobreak >nul\n\ncall :GET_SSID CURRENT_SSID\nif "!CURRENT_SSID!"=="" goto MONITOR_LOOP\n\nfor /f "delims=" %%R in ('curl.exe -s -m 3 http://www.msftconnecttest.com/connecttest.txt 2^>nul') do set "TEST_RESPONSE=%%R"\n\nif not "!TEST_RESPONSE!"=="Microsoft Connect Test" (\n    timeout /t 2 /nobreak >nul\n    \n    curl.exe -s -k -X POST "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://example.com" ^\n      -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" ^\n      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" ^\n      -H "Content-Type: application/x-www-form-urlencoded" ^\n      -H "Origin: http://phc.prontonetworks.com" ^\n      -H "Referer: http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://www.msftconnecttest.com/redirect" ^\n      --data-urlencode "userId=!USER_ID!" ^\n      --data-urlencode "password=!USER_PASS!" ^\n      --data-urlencode "serviceName=ProntoAuthentication" >nul\n\n    timeout /t 3 /nobreak >nul\n)\n\ngoto MONITOR_LOOP\n\n:GET_SSID\nset "%~1="\nfor /f "tokens=2 delims=:" %%I in ('netsh wlan show interfaces ^| findstr /c:" SSID "') do (\n    set "RAW_SSID=%%I"\n    set "%~1=!RAW_SSID:~1!"\n)\nexit /b`;
 
       const vbsContent = 'CreateObject("WScript.Shell").Run """' + '%APPDATA%\\ProntoAutoLogin\\ProntoAutoLogin.bat""", 0, False';
 
-      // UTF-8 Base64 encoding
       const batBase64 = btoa(unescape(encodeURIComponent(batContent)));
       const vbsBase64 = btoa(unescape(encodeURIComponent(vbsContent)));
 
-      // Construct PS script block with popup alert appended at the end
       const psScript = `$dir = "$env:APPDATA\\ProntoAutoLogin"; $startup = [Environment]::GetFolderPath('Startup'); New-Item -ItemType Directory -Force -Path $dir | Out-Null; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${batBase64}')) | Set-Content -Path "$dir\\ProntoAutoLogin.bat"; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${vbsBase64}')) | Set-Content -Path "$startup\\SilentStart.vbs"; Start-Process wscript.exe -ArgumentList "\`"$startup\\SilentStart.vbs\`""; (New-Object -ComObject WScript.Shell).Popup("The VIT Wifi Auto Login software has been installed successfully.", 0, "VIT Auto Login", 64) | Out-Null`;
 
-      // Convert entire PowerShell payload to UTF-16LE Base64 for -EncodedCommand
       let unicodeBytes = new Uint16Array(psScript.length);
       for (let i = 0; i < psScript.length; i++) {
         unicodeBytes[i] = psScript.charCodeAt(i);
@@ -206,7 +196,7 @@ exit /b`;
 <body>
 
 <div class="card">
-  <h2>Pronto AutoLogin Setup Generator</h2>
+  <h2>VIT Wifi auto login Setup Generator</h2>
   <p>Generate a single PowerShell command to deploy the silent background script.</p>
   
   <div class="form-group">
@@ -229,10 +219,17 @@ exit /b`;
     <b>
       Next Steps: <br>
       1. Click the copy button <br>
-      2. Click the windows button on your computer and search windows powershell. <br>
+      2. Click the windows button on your computer and search powershell. <br>
       3. Finally paste the copied code into the powershell prompt and press enter. <br>
       Enjoy!
     </b>
+  </div>
+</div>
+
+<!-- Locked Bottom Status & Navigation Bar -->
+<div class="locked-bottom-bar">
+  <div class="status-indicator">
+    <span>Made with ❤️ by Neerav &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;©️ 2026</span>
   </div>
 </div>
 
