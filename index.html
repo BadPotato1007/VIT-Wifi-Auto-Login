@@ -9,12 +9,12 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: #f4f6f8;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       margin: 0;
-      /* Prevent the bottom bar from covering content on smaller views */
-      padding-bottom: 70px; 
+      padding: 20px 20px 80px 20px; 
       box-sizing: border-box;
     }
     .card {
@@ -24,7 +24,7 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.08);
       width: 100%;
       max-width: 480px;
-      margin: 20px;
+      box-sizing: border-box;
     }
     h2 {
       margin-top: 0;
@@ -35,6 +35,19 @@
       color: #666;
       font-size: 14px;
       margin-bottom: 20px;
+    }
+    .platform-notice {
+      background-color: #e6f0fa;
+      color: #0052a3;
+      border: 1px solid #b8d5f3;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .form-group {
       margin-bottom: 16px;
@@ -99,47 +112,81 @@
       background-color: #218838;
     }
 
-    /* --- Locked Bottom Bar Styles --- */
     .locked-bottom-bar {
       position: fixed;
       bottom: 0;
-      top: 12;
+      left: 0;
       width: 100%;
-      height: 55px;
+      height: 60px;
       background-color: #1a1a1a;
       color: #ffffff;
+      display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       padding: 0 20px;
       box-sizing: border-box;
-      z-index: 9999;
+      z-index: 999;
       box-shadow: 0 -3px 12px rgba(0,0,0,0.15);
       font-size: 13px;
+      text-align: center;
     }
-    a {
-    color: grey; /* Replace with your preferred hex, RGB, or named color */
-}
-    .status-indicator {
+    .locked-bottom-bar a {
+      color: #3b82f6; 
+    }
+    
+    .gay {
+      width: 260px; 
+      position: fixed;
+      right: 20px; 
+      top: 50%;
+      transform: translateY(-50%); 
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px; 
+      padding: 20px;
+      box-sizing: border-box; 
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
 
-      gap: 8px;
-    }
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      background-color: #28a745;
-      border-radius: 50%;
-    }
-    .bar-links a {
-      color: #0066cc;
-      text-decoration: none;
+    .qr-text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
       font-weight: 600;
-      background: #ffffff;
-      padding: 6px 12px;
-      border-radius: 4px;
-      transition: opacity 0.2s;
+      color: #333333;
+      margin: 0;
+      line-height: 1.4;
     }
-    .bar-links a:hover {
-      opacity: 0.9;
+
+    .qr-image {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      width: 180px; 
+    }
+
+    /* Mobile Responsive Rules */
+    @media (max-width: 1080px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 30px;
+        padding-bottom: 90px;
+      }
+
+      .gay {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        width: 100%;
+        max-width: 480px;
+        margin-top: 20px;
+      }
     }
   </style>
 
@@ -198,7 +245,11 @@
 
 <div class="card">
   <h2>VIT Wifi auto login Setup Generator</h2>
-  <p>Generate a single PowerShell command to deploy the silent background script.</p>
+  
+  <div class="platform-notice">
+    💻 <span><strong>Note:</strong> This script is designed for <strong>Windows OS</strong> laptops and desktop PCs.</span>
+  </div>
+
   
   <div class="form-group">
     <label for="reg">Registration Number</label>
@@ -227,13 +278,14 @@
   </div>
 </div>
 
-<!-- Locked Bottom Status & Navigation Bar -->
+<div class="gay">
+  <p class="qr-text">If this helped you out, consider sending me something!</p>
+  <img src="https://i.ibb.co/tPL7Z56g/Screenshot-2026-07-22-113835.png" alt="QR Code" class="qr-image">
+</div>
+
 <div class="locked-bottom-bar">
-  <div class="status-indicator"><center><br>
-    <span>Made with ❤️ by Neerav ©️ 2026</span>
-    <br>
-    Having Doubts? Checkout the code at <a href="https://github.com/BadPotato1007/VIT-Wifi-Auto-Login/"> Here </a>
-    
+  <div>
+    Made with ❤️ by Neerav © 2026 | Having Doubts? Check out the code <a href="https://github.com/BadPotato1007/VIT-Wifi-Auto-Login/" target="_blank">here</a>
   </div>
 </div>
 
