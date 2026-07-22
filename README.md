@@ -1,5 +1,7 @@
 # VIT-Wifi-Auto-Login
 
+<img width="76" height="82" alt="Screenshot 2026-07-22 122435" src="https://github.com/user-attachments/assets/5283df65-3a32-4672-9b36-b23e2a671070" />
+
 
 A simple program to automatically log in to the VIT Wi-Fi without having to input your credentials every time. This tool is designed for Windows laptops and PCs.
 
