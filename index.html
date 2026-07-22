@@ -37,19 +37,6 @@
       font-size: 14px;
       margin-bottom: 20px;
     }
-    .platform-notice {
-      background-color: #e6f0fa;
-      color: #0052a3;
-      border: 1px solid #b8d5f3;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 13px;
-      font-weight: 500;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
     .form-group {
       margin-bottom: 16px;
     }
@@ -60,7 +47,7 @@
       color: #333;
       font-size: 13px;
     }
-    input[type="text"], input[type="password"] {
+    input[type="text"], input[type="password"], select {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #ccc;
@@ -69,8 +56,9 @@
       font-size: 14px;
       outline: none;
       transition: border-color 0.2s;
+      background-color: #fff;
     }
-    input:focus {
+    input:focus, select:focus {
       border-color: #0066cc;
     }
     button {
@@ -171,7 +159,6 @@
       width: 180px; 
     }
 
-    /* Mobile Responsive Rules */
     @media (max-width: 1080px) {
       body {
         justify-content: flex-start;
@@ -190,11 +177,7 @@
       }
     }
   </style>
-<!-- Vercel Web Analytics for HTML -->
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
+
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const btnGenerate = document.getElementById("btnGenerate");
@@ -205,6 +188,7 @@
     });
 
     function generateCommand() {
+      const platform = document.getElementById('platform').value;
       const reg = document.getElementById('reg').value.trim();
       const pass = document.getElementById('pass').value.trim();
 
@@ -213,24 +197,94 @@
         return;
       }
 
-      const batContent = `@echo off\nsetlocal EnableDelayedExpansion\n\nset "APP_DIR=%APPDATA%\\ProntoAutoLogin"\nset "CRED_FILE=%APP_DIR%\\creds.dat"\n\nif not exist "%APP_DIR%" mkdir "%APP_DIR%"\n\nif not exist "%CRED_FILE%" (\n    (\n        echo REG:${reg}\n        echo PASS:${pass}\n    ) > "%CRED_FILE%"\n)\n\nfor /f "usebackq tokens=1,2 delims=:" %%A in ("%CRED_FILE%") do (\n    if "%%A"=="REG" set "USER_ID=%%B"\n    if "%%A"=="PASS" set "USER_PASS=%%B"\n)\n\n:MONITOR_LOOP\ntimeout /t 5 /nobreak >nul\n\ncall :GET_SSID CURRENT_SSID\nif "!CURRENT_SSID!"=="" goto MONITOR_LOOP\n\nfor /f "delims=" %%R in ('curl.exe -s -m 3 http://www.msftconnecttest.com/connecttest.txt 2^>nul') do set "TEST_RESPONSE=%%R"\n\nif not "!TEST_RESPONSE!"=="Microsoft Connect Test" (\n    timeout /t 2 /nobreak >nul\n    \n    curl.exe -s -k -X POST "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://example.com" ^\n      -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" ^\n      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" ^\n      -H "Content-Type: application/x-www-form-urlencoded" ^\n      -H "Origin: http://phc.prontonetworks.com" ^\n      -H "Referer: http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://www.msftconnecttest.com/redirect" ^\n      --data-urlencode "userId=!USER_ID!" ^\n      --data-urlencode "password=!USER_PASS!" ^\n      --data-urlencode "serviceName=ProntoAuthentication" >nul\n\n    timeout /t 3 /nobreak >nul\n)\n\ngoto MONITOR_LOOP\n\n:GET_SSID\nset "%~1="\nfor /f "tokens=2 delims=:" %%I in ('netsh wlan show interfaces ^| findstr /c:" SSID "') do (\n    set "RAW_SSID=%%I"\n    set "%~1=!RAW_SSID:~1!"\n)\nexit /b`;
+      const instructionSteps = document.getElementById('instructionSteps');
 
-      const vbsContent = 'CreateObject("WScript.Shell").Run """' + '%APPDATA%\\ProntoAutoLogin\\ProntoAutoLogin.bat""", 0, False';
+      if (platform === 'windows') {
+        // --- WINDOWS POWERSHELL LOGIC ---
+        const batContent = `@echo off\nsetlocal EnableDelayedExpansion\n\nset "APP_DIR=%APPDATA%\\ProntoAutoLogin"\nset "CRED_FILE=%APP_DIR%\\creds.dat"\n\nif not exist "%APP_DIR%" mkdir "%APP_DIR%"\n\nif not exist "%CRED_FILE%" (\n    (\n        echo REG:${reg}\n        echo PASS:${pass}\n    ) > "%CRED_FILE%"\n)\n\nfor /f "usebackq tokens=1,2 delims=:" %%A in ("%CRED_FILE%") do (\n    if "%%A"=="REG" set "USER_ID=%%B"\n    if "%%A"=="PASS" set "USER_PASS=%%B"\n)\n\n:MONITOR_LOOP\ntimeout /t 5 /nobreak >nul\n\ncall :GET_SSID CURRENT_SSID\nif "!CURRENT_SSID!"=="" goto MONITOR_LOOP\n\nfor /f "delims=" %%R in ('curl.exe -s -m 3 http://www.msftconnecttest.com/connecttest.txt 2^>nul') do set "TEST_RESPONSE=%%R"\n\nif not "!TEST_RESPONSE!"=="Microsoft Connect Test" (\n    timeout /t 2 /nobreak >nul\n    \n    curl.exe -s -k -X POST "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://example.com" ^\n      -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" ^\n      -H "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" ^\n      -H "Content-Type: application/x-www-form-urlencoded" ^\n      -H "Origin: http://phc.prontonetworks.com" ^\n      -H "Referer: http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://www.msftconnecttest.com/redirect" ^\n      --data-urlencode "userId=!USER_ID!" ^\n      --data-urlencode "password=!USER_PASS!" ^\n      --data-urlencode "serviceName=ProntoAuthentication" >nul\n\n    timeout /t 3 /nobreak >nul\n)\n\ngoto MONITOR_LOOP\n\n:GET_SSID\nset "%~1="\nfor /f "tokens=2 delims=:" %%I in ('netsh wlan show interfaces ^| findstr /c:" SSID "') do (\n    set "RAW_SSID=%%I"\n    set "%~1=!RAW_SSID:~1!"\n)\nexit /b`;
 
-      const batBase64 = btoa(unescape(encodeURIComponent(batContent)));
-      const vbsBase64 = btoa(unescape(encodeURIComponent(vbsContent)));
+        const vbsContent = 'CreateObject("WScript.Shell").Run """' + '%APPDATA%\\ProntoAutoLogin\\ProntoAutoLogin.bat""", 0, False';
 
-      const psScript = `$dir = "$env:APPDATA\\ProntoAutoLogin"; $startup = [Environment]::GetFolderPath('Startup'); New-Item -ItemType Directory -Force -Path $dir | Out-Null; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${batBase64}')) | Set-Content -Path "$dir\\ProntoAutoLogin.bat"; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${vbsBase64}')) | Set-Content -Path "$startup\\SilentStart.vbs"; Start-Process wscript.exe -ArgumentList "\`"$startup\\SilentStart.vbs\`""; (New-Object -ComObject WScript.Shell).Popup("The VIT Wifi Auto Login software has been installed successfully.", 0, "VIT Auto Login", 64) | Out-Null`;
+        const batBase64 = btoa(unescape(encodeURIComponent(batContent)));
+        const vbsBase64 = btoa(unescape(encodeURIComponent(vbsContent)));
 
-      let unicodeBytes = new Uint16Array(psScript.length);
-      for (let i = 0; i < psScript.length; i++) {
-        unicodeBytes[i] = psScript.charCodeAt(i);
+        const psScript = `$dir = "$env:APPDATA\\ProntoAutoLogin"; $startup = [Environment]::GetFolderPath('Startup'); New-Item -ItemType Directory -Force -Path $dir | Out-Null; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${batBase64}')) | Set-Content -Path "$dir\\ProntoAutoLogin.bat"; [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String('${vbsBase64}')) | Set-Content -Path "$startup\\SilentStart.vbs"; Start-Process wscript.exe -ArgumentList "\`"$startup\\SilentStart.vbs\`""; (New-Object -ComObject WScript.Shell).Popup("The VIT Wifi Auto Login software has been installed successfully.", 0, "VIT Auto Login", 64) | Out-Null`;
+
+        let unicodeBytes = new Uint16Array(psScript.length);
+        for (let i = 0; i < psScript.length; i++) {
+          unicodeBytes[i] = psScript.charCodeAt(i);
+        }
+        let psBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(unicodeBytes.buffer)));
+
+        document.getElementById('commandBox').value = `powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${psBase64}`;
+        
+        instructionSteps.innerHTML = `
+          1. Click the <b>Copy Command</b> button.<br>
+          2. Press <b>Win + R</b>, type <b>powershell</b>, and press Enter.<br>
+          3. Paste the copied code into PowerShell and press Enter.<br>
+          Enjoy auto-login!
+        `;
+
+      } else {
+        // --- macOS TERMINAL / BASH LOGIC ---
+const macScript = `mkdir -p ~/.vit_autologin
+cat << 'EOF' > ~/.vit_autologin/auto_login.sh
+#!/bin/bash
+USER_ID="${reg}"
+USER_PASS="${pass}"
+
+while true; do
+  TEST_RESPONSE=$(curl -s -m 3 http://www.msftconnecttest.com/connecttest.txt 2>/dev/null)
+  if [ "$TEST_RESPONSE" != "Microsoft Connect Test" ]; then
+    curl -s -k -X POST "http://phc.prontonetworks.com/cgi-bin/authlogin?URI=http://example.com" \\
+      -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" \\
+      -H "Content-Type: application/x-www-form-urlencoded" \\
+      --data-urlencode "userId=$USER_ID" \\
+      --data-urlencode "password=$USER_PASS" \\
+      --data-urlencode "serviceName=ProntoAuthentication" > /dev/null
+  fi
+  sleep 5
+done
+EOF
+chmod +x ~/.vit_autologin/auto_login.sh
+
+mkdir -p ~/Library/LaunchAgents
+cat << 'EOF' > ~/Library/LaunchAgents/com.vit.autologin.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.vit.autologin</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>\${HOME}/.vit_autologin/auto_login.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+</dict>
+</plist>
+EOF
+
+launchctl unload ~/Library/LaunchAgents/com.vit.autologin.plist 2>/dev/null
+launchctl load ~/Library/LaunchAgents/com.vit.autologin.plist
+osascript -e 'display dialog "VIT Wifi Auto Login installed and started successfully on macOS!" buttons {"OK"} default button "OK"'
+`;
+
+        const macBase64 = btoa(unescape(encodeURIComponent(macScript)));
+        document.getElementById('commandBox').value = `echo "${macBase64}" | base64 --decode | bash`;
+        
+        instructionSteps.innerHTML = `
+          1. Click the <b>Copy Command</b> button.<br>
+          2. Open <b>Terminal</b> on your Mac (Cmd + Space, type "Terminal").<br>
+          3. Paste the command into Terminal and press Enter.<br>
+          
+        `;
       }
-      let psBase64 = btoa(String.fromCharCode.apply(null, new Uint8Array(unicodeBytes.buffer)));
 
-      const psCommand = `powershell -NoProfile -ExecutionPolicy Bypass -EncodedCommand ${psBase64}`;
-
-      document.getElementById('commandBox').value = psCommand;
       document.getElementById('outputGroup').style.display = 'block';
     }
 
@@ -250,12 +304,15 @@
 
 <div class="card">
   <h2>VIT Wifi auto login Setup Generator</h2>
-  
-  <div class="platform-notice">
-    💻 <span><strong>Note:</strong> This script is designed for <strong>Windows OS</strong> laptops and desktop PCs.</span>
+
+  <div class="form-group">
+    <label for="platform">Operating System</label>
+    <select id="platform">
+      <option value="windows">Windows OS</option>
+      <option value="macos">macOS (MacBook / iMac)</option>
+    </select>
   </div>
 
-  
   <div class="form-group">
     <label for="reg">Registration Number</label>
     <input type="text" id="reg" placeholder="e.g. 26BEC0037">
@@ -269,17 +326,12 @@
   <button id="btnGenerate">Generate Setup Command</button>
   
   <div class="output-group" id="outputGroup">
-    <label>Paste this command into PowerShell:</label>
+    <label>Paste this command into your Terminal / PowerShell:</label>
     <textarea id="commandBox" readonly></textarea>
     <button class="copy-btn" id="btnCopy">Copy Command</button>
     <br><br>
-    <b>
-      Next Steps: <br>
-      1. Click the copy button <br>
-      2. Click the windows button on your computer and search powershell. <br>
-      3. Finally paste the copied code into the powershell prompt and press enter. <br>
-      Enjoy!
-    </b>
+    <b>Next Steps:</b><br>
+    <span id="instructionSteps"></span>
   </div>
 </div>
 
